@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resq-backend-deployment
+  labels:
+    app: resq-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: resq-backend
+  template:
+    metadata:
+      labels:
+        app: resq-backend
+    spec:
+      containers:
+      - name: backend
+        image: resq-registry.gov.in/resq-backend:v1.0.0
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: resq-secrets
+              key: database-url
+        resources:
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: resq-backend-service
+spec:
+  type: ClusterIP
+  selector:
+    app: resq-backend
+  ports:
+  - port: 8000
+    targetPort: 8000
